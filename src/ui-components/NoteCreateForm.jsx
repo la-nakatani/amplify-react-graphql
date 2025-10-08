@@ -8,9 +8,8 @@
 import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
-import { generateClient } from "aws-amplify/api";
+import { API } from "aws-amplify";
 import { createNote } from "../graphql/mutations";
-const client = generateClient();
 export default function NoteCreateForm(props) {
   const {
     clearOnSuccess = true,
@@ -23,20 +22,26 @@ export default function NoteCreateForm(props) {
     ...rest
   } = props;
   const initialValues = {
-    title: "",
-    content: "",
+    name: "",
+    description: "",
+    image: "",
   };
-  const [title, setTitle] = React.useState(initialValues.title);
-  const [content, setContent] = React.useState(initialValues.content);
+  const [name, setName] = React.useState(initialValues.name);
+  const [description, setDescription] = React.useState(
+    initialValues.description
+  );
+  const [image, setImage] = React.useState(initialValues.image);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
-    setTitle(initialValues.title);
-    setContent(initialValues.content);
+    setName(initialValues.name);
+    setDescription(initialValues.description);
+    setImage(initialValues.image);
     setErrors({});
   };
   const validations = {
-    title: [{ type: "Required" }],
-    content: [],
+    name: [{ type: "Required" }],
+    description: [],
+    image: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -64,8 +69,9 @@ export default function NoteCreateForm(props) {
       onSubmit={async (event) => {
         event.preventDefault();
         let modelFields = {
-          title,
-          content,
+          name,
+          description,
+          image,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -95,7 +101,7 @@ export default function NoteCreateForm(props) {
               modelFields[key] = null;
             }
           });
-          await client.graphql({
+          await API.graphql({
             query: createNote.replaceAll("__typename", ""),
             variables: {
               input: {
@@ -120,54 +126,82 @@ export default function NoteCreateForm(props) {
       {...rest}
     >
       <TextField
-        label="Title"
+        label="Name"
         isRequired={true}
         isReadOnly={false}
-        value={title}
+        value={name}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
             const modelFields = {
-              title: value,
-              content,
+              name: value,
+              description,
+              image,
             };
             const result = onChange(modelFields);
-            value = result?.title ?? value;
+            value = result?.name ?? value;
           }
-          if (errors.title?.hasError) {
-            runValidationTasks("title", value);
+          if (errors.name?.hasError) {
+            runValidationTasks("name", value);
           }
-          setTitle(value);
+          setName(value);
         }}
-        onBlur={() => runValidationTasks("title", title)}
-        errorMessage={errors.title?.errorMessage}
-        hasError={errors.title?.hasError}
-        {...getOverrideProps(overrides, "title")}
+        onBlur={() => runValidationTasks("name", name)}
+        errorMessage={errors.name?.errorMessage}
+        hasError={errors.name?.hasError}
+        {...getOverrideProps(overrides, "name")}
       ></TextField>
       <TextField
-        label="Content"
+        label="Description"
         isRequired={false}
         isReadOnly={false}
-        value={content}
+        value={description}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
             const modelFields = {
-              title,
-              content: value,
+              name,
+              description: value,
+              image,
             };
             const result = onChange(modelFields);
-            value = result?.content ?? value;
+            value = result?.description ?? value;
           }
-          if (errors.content?.hasError) {
-            runValidationTasks("content", value);
+          if (errors.description?.hasError) {
+            runValidationTasks("description", value);
           }
-          setContent(value);
+          setDescription(value);
         }}
-        onBlur={() => runValidationTasks("content", content)}
-        errorMessage={errors.content?.errorMessage}
-        hasError={errors.content?.hasError}
-        {...getOverrideProps(overrides, "content")}
+        onBlur={() => runValidationTasks("description", description)}
+        errorMessage={errors.description?.errorMessage}
+        hasError={errors.description?.hasError}
+        {...getOverrideProps(overrides, "description")}
+      ></TextField>
+      <TextField
+        label="Image"
+        isRequired={false}
+        isReadOnly={false}
+        value={image}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              name,
+              description,
+              image: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.image ?? value;
+          }
+          if (errors.image?.hasError) {
+            runValidationTasks("image", value);
+          }
+          setImage(value);
+        }}
+        onBlur={() => runValidationTasks("image", image)}
+        errorMessage={errors.image?.errorMessage}
+        hasError={errors.image?.hasError}
+        {...getOverrideProps(overrides, "image")}
       ></TextField>
       <Flex
         justifyContent="space-between"
